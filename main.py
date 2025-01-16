@@ -359,4 +359,7 @@ if __name__ == '__main__':
 
 # # Start polling to fetch updates
 # executor.start_polling(dp, skip_updates=True)
+# jk
+# knk
+# djf
 
