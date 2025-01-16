@@ -1,1 +1,21 @@
-node_modules
+
+# Ignore the virtual environment
+venv/
+
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignore IDE and editor files (for example, VSCode and macOS)
+.vscode/
+.DS_Store
+
+# Ignore any other temporary or system files
+*.log
+
+# Ignore environment files
+.env
+
+# Ignore any other sensitive files you might add in the future
+*.env

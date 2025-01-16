@@ -1,0 +1,28 @@
+# fly.toml app configuration file generated for synergy-3634 on 2025-01-15T17:03:33-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'synergy-3634'
+primary_region = 'den'
+
+[build]
+  dockerfile = "Dockerfile"
+  entrypoint = "/hello-fly/main.py"  # Force Fly.io to use bot.py explicitly
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[env]
+# If your main.py is the main script
+CMD = "python main.py"
+
+[[vm]]
+  memory = '2gb'
+  cpu_kind = 'shared'
+  cpus = 1
