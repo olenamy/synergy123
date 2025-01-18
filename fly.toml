@@ -8,19 +8,23 @@ primary_region = 'den'
 
 [build]
   dockerfile = "Dockerfile"
-  entrypoint = "/hello-fly/main.py"  # Force Fly.io to use bot.py explicitly
+  entrypoint = "python bot.py"  # Force Fly.io to use bot.py explicitly
 
 [http_service]
   internal_port = 8080
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ['app']
 
 [env]
 # If your main.py is the main script
-CMD = "python main.py"
+CMD = "python bot.py"
+
+[auto_scaling]
+  min_instances = 1
+  max_instances = 3
 
 [[vm]]
   memory = '2gb'

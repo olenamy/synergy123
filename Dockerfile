@@ -19,14 +19,14 @@ COPY requirements.txt ./
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN ls -la /new  # or /app, depending on your WORKDIR
+RUN ls -la /hello-fly
 
 # Copy the rest of the application code
-COPY . .
+COPY . /hello-fly
 
 # Expose the port if your app listens on one (optional, depending on your app)
 EXPOSE 8080
 
 # Command to run your app (replace with your bot script or app entry point)
-CMD ["python", "main.py"]
+CMD ["python", "bot.py"]
 

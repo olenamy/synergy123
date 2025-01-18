@@ -12,21 +12,30 @@ import pytz
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from aiogram import types
+# from flask import Flask, request, jsonify
 
+# app = Flask(__name__)
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+# app = Flask(__name__)
 
 # Load environment variables from .env
 logger.debug("Loading environment variables from .env file.")
 load_dotenv()
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
+print("Bot token:", BOT_TOKEN)
 USER_ID = os.getenv('USER_ID')
 
 # Log the loaded variables
 logger.debug(f"BOT_TOKEN loaded: {BOT_TOKEN is not None}")
 logger.debug(f"USER_ID loaded: {USER_ID}")
+
+# Check if the token was not loaded
+if BOT_TOKEN is None:
+    logger.error("BOT_TOKEN not loaded from .env file!")
+    raise ValueError("BOT_TOKEN not loaded. Ensure your .env file is present.")
 
 # Automatically detect the environment
 # def detect_environment():
@@ -73,6 +82,21 @@ async def send_scheduled_message(user_id, message_text):
     except Exception as e:
         logger.error(f"Error sending scheduled message: {e}")
 
+# @app.route("/webhook", methods=["POST"])
+# async def handle_webhook(request):
+#     logging.debug("Webhook hit")
+#     try:
+#         data = await request.json()
+#         logging.debug(f"Webhook data received: {data}")
+#         # Handle the incoming request
+#     except Exception as e:
+#         logging.error(f"Error processing webhook: {e}")
+def handle_webhook():
+    data = request.json
+    logging.debug(f"Received webhook data: {data}")
+    # Process the data here (e.g., sending a message to Telegram)
+    return jsonify({'status': 'ok'}), 200
+
 # Webhook handler for Fly.io
 async def handle(request):
     # Handle incoming requests to the webhook endpoint
@@ -110,12 +134,30 @@ async def delete_webhook():
     logger.debug(f"Webhook deleted: {webhook_response}")
 
 # Set the webhook URL (for production)
+# async def set_webhook():
+#     # Simulate setting the webhook
+#     logger.debug("Setting webhook...")
+#     # Add logic to actually set the webhook if needed
+#     # response = await some_webhook_function()
+#     return True
 async def set_webhook():
-    # Simulate setting the webhook
-    logger.debug("Setting webhook...")
-    # Add logic to actually set the webhook if needed
-    # response = await some_webhook_function()
-    return True
+    try:
+        webhook_url = set_webhook_url()  # Get your URL dynamically
+        logger.debug(f"Setting webhook URL: {webhook_url}")
+        
+        # Set webhook
+        webhook_response = await bot.set_webhook(webhook_url)
+        logger.debug(f"Webhook set response: {webhook_response}")
+        
+        # Verify webhook status
+        webhook_info = await bot.get_webhook_info()
+        logger.debug(f"Webhook info: {webhook_info}")
+        
+        return True
+    except Exception as e:
+        logger.error(f"Error setting webhook: {e}")
+        return False
+
 
 async def check_webhook_status():
     webhook_info = await bot.get_webhook_info()
@@ -128,46 +170,46 @@ async def start(message: types.Message):
     try:
         user_id = message.from_user.id
 
-        # Check if this is the first time the user has clicked /start
-        if user_id not in user_start_clicked:
-            user_start_clicked.add(user_id)
-            logger.debug(f"Sending welcome messages to {user_id}")
+        # # Check if this is the first time the user has clicked /start
+        # if user_id not in user_start_clicked:
+        #     user_start_clicked.add(user_id)
+        #     logger.debug(f"Sending welcome messages to {user_id}")
 
             # Welcome message
-            await message.answer(
-                text=f"Hello, <b>{message.from_user.full_name}!</b> Welcome to New Year 2025 Compass Workshop!",
-                parse_mode='HTML'
-            )
+        await message.answer(
+            text=f"Hello, <b>{message.from_user.full_name}!</b> Welcome to New Year 2025 Compass Workshop!",
+            parse_mode='HTML'
+        )
 
-            # Social media buttons
-            instagram_button = types.InlineKeyboardButton(
-                text="Follow me on Instagram", 
-                url="https://www.instagram.com/olenka_myronenko/"
-            )
-            tiktok_button = types.InlineKeyboardButton(
-                text="Follow me on TikTok", 
-                url="https://www.tiktok.com/@olenanumerology"
-            )
-            website_button = types.InlineKeyboardButton(
-                text="My Website", 
-                url="https://numerologysynergy.com/"
-            )
-            social_keyboard = types.InlineKeyboardMarkup(inline_keyboard=[
-                [instagram_button],
-                [tiktok_button],
-                [website_button]
-            ])
+        # Social media buttons
+        instagram_button = types.InlineKeyboardButton(
+            text="Follow me on Instagram", 
+            url="https://www.instagram.com/olenka_myronenko/"
+        )
+        tiktok_button = types.InlineKeyboardButton(
+            text="Follow me on TikTok", 
+            url="https://www.tiktok.com/@olenanumerology"
+        )
+        website_button = types.InlineKeyboardButton(
+            text="My Website", 
+            url="https://numerologysynergy.com/"
+        )
+        social_keyboard = types.InlineKeyboardMarkup(inline_keyboard=[
+            [instagram_button],
+            [tiktok_button],
+            [website_button]
+        ])
 
-            await message.answer(
-                "It's me Olena Myronenko. I am so excited to start this journey of new fulfilled life with you in 2025.",
-                reply_markup=social_keyboard
-            )
-            await asyncio.sleep(5)
+        await message.answer(
+            "It's me Olena Myronenko. I am so excited to start this journey of new fulfilled life with you in 2025.",
+            reply_markup=social_keyboard
+        )
+        await asyncio.sleep(5)
 
             # More messages to follow (as per your existing logic)
 
-            await message.answer(
-                text="""<b><u>What to Expect?</u></b>
+        await message.answer(
+            text="""<b><u>What to Expect?</u></b>
 
 ✔️ <b>You have gained access to telegram bot already and that's where all the workshop going to be happening.</b>
 Pay attention below bot will send you your 1st valuable lesson to watch right now down below.
@@ -184,10 +226,10 @@ You can come back any time and refresh your memory, use it as a valuable resourc
 <i>All the knowledge you will receive during the workshop check out next ⬇️</i>""",
                 parse_mode='HTML'
             )
-            await asyncio.sleep(10)
+        await asyncio.sleep(10)
 
-            await message.answer(
-                text="""<b>Here is what you will learn:</b>
+        await message.answer(
+            text="""<b>Here is what you will learn:</b>
 
 🔥 How to manifest your desires and goals for 2025.
 
@@ -201,15 +243,15 @@ You can come back any time and refresh your memory, use it as a valuable resourc
                 parse_mode='HTML'
             )
 
-            await asyncio.sleep(5)
+        await asyncio.sleep(5)
     
-    # except Exception as e:
-    #     # Log the error (this part should still catch errors if any occur)
-    #     logger.exception("Exception details")
+    except Exception as e:
+        # Log the error (this part should still catch errors if any occur)
+        logger.exception("Exception details")
            
-            await message.answer("Let's get started. You are getting your day 1 lesson right now! 🎓")
+        await message.answer("Let's get started. You are getting your day 1 lesson right now! 🎓")
             
-            await asyncio.sleep(5)
+        await asyncio.sleep(5)
         
         video_url = "https://youtu.be/6F99NcfJPAc"
         thumbnail_url = "https://drive.google.com/uc?id=1Pk0v5eOhF78j_sgO1LoIVVGkZK5BDKrJ&export=download"
@@ -294,7 +336,6 @@ async def main():
     try:
         # Clear the user start interaction state before starting the bot
         user_start_clicked.clear()  # This will reset the users who have interacted with the /start command
-        
         logger.debug("Bot is starting...")
         
         await set_webhook()
@@ -336,30 +377,28 @@ async def main():
     except Exception as e:
         logger.error(f"Error in main function: {e}")
 
-if __name__ == '__main__':
-    try:
-        # Ensure we only have one event loop running
-        if not asyncio.get_event_loop().is_running():
-            asyncio.run(main())  # Start the main function if no event loop is running
-        else:
-            loop = asyncio.get_event_loop()
-            loop.create_task(main())  # Use the existing event loop to run the main function
-
-    except KeyboardInterrupt:
-        logger.info("Bot stopped by user.")
-    except Exception as e:
-        logger.error(f"Unexpected error occurred: {e}")
 # if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=8080)
 #     try:
-#         asyncio.run(main())
+#         # Ensure we only have one event loop running
+#         if not asyncio.get_event_loop().is_running():
+#             asyncio.run(main())  # Start the main function if no event loop is running
+#         else:
+#             loop = asyncio.get_event_loop()
+#             loop.create_task(main())  # Use the existing event loop to run the main function
+
 #     except KeyboardInterrupt:
 #         logger.info("Bot stopped by user.")
 #     except Exception as e:
 #         logger.error(f"Unexpected error occurred: {e}")
+if __name__ == '__main__':
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by user.")
+    except Exception as e:
+        logger.error(f"Unexpected error occurred: {e}")
 
 # # Start polling to fetch updates
 # executor.start_polling(dp, skip_updates=True)
-# jk
-# knk
-# djf
 
